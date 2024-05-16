@@ -1,0 +1,81 @@
+# version: '3.1'
+
+# services:
+#   zoo1:
+#     image: zookeeper
+#     networks:
+#       - hadoop
+#     hostname: zoo1
+#     ports:
+#       - 2181:2181
+#     environment:
+#       ZOO_MY_ID: 1
+#       ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+
+#   zoo2:
+#     image: zookeeper
+#     networks:
+#       - hadoop
+#     hostname: zoo2
+#     ports:
+#       - 2182:2181
+#     environment:
+#       ZOO_MY_ID: 2
+#       ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+
+#   zoo3:
+#     image: zookeeper
+#     networks:
+#       - hadoop
+#     hostname: zoo3
+#     ports:
+#       - 2183:2181
+#     environment:
+#       ZOO_MY_ID: 3
+#       ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+
+# networks:
+#   hadoop:
+#     external: true
+
+version: "3.9"
+services:
+  zoo1:
+    container_name: zoo1
+    hostname: zoo1
+    image: bitnami/zookeeper:3.6.2
+    ports:
+      - 21811:2181
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      - ZOO_SERVER_ID=1
+      - ZOO_SERVERS=0.0.0.0:2888:3888,zoo2:2888:3888,zoo3:2888:3888
+    networks:
+      - hadoop
+  zoo2:
+    container_name: zoo2
+    hostname: zoo2
+    image: bitnami/zookeeper:3.6.2
+    ports:
+      - 21812:2181
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      - ZOO_SERVER_ID=2
+      - ZOO_SERVERS=zoo1:2888:3888,0.0.0.0:2888:3888,zoo2:2888:3888
+    networks:
+      - hadoop
+  zoo3:
+    container_name: zoo3
+    hostname: zoo3
+    image: bitnami/zookeeper:3.6.2
+    ports:
+      - 21813:2181
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      - ZOO_SERVER_ID=3
+      - ZOO_SERVERS=zoo1:2888:3888,zoo2:2888:3888,0.0.0.0:2888:3888
+    networks:
+      - hadoop
+networks:
+  hadoop:
+    external: true

@@ -1,0 +1,45 @@
+FROM ubuntu:20.04
+
+WORKDIR /root
+
+# install jdk8
+RUN apt-get update && \
+    apt-get install -y openjdk-8-jdk wget
+
+# install hive metastore
+RUN wget https://mirrors.sonic.net/apache/hive/hive-3.1.3/apache-hive-3.1.3-bin.tar.gz && \
+    tar -xzvf apache-hive-3.1.3-bin.tar.gz && \
+    mv apache-hive-3.1.3-bin /opt/hive
+
+
+# set environment variable
+ENV HIVE_HOME=/opt/hive
+ENV HADOOP_HOME=/opt/hadoop
+ENV HIVE_CONF_DIR=/opt/hive/conf
+ENV PATH=$PATH:$HIVE_HOME/bin
+
+# install postgresql
+RUN apt-get install -y postgresql postgresql-contrib && \
+    wget https://repo1.maven.org/maven2/org/postgresql/postgresql/42.5.4/postgresql-42.5.4.jar && \
+    mv postgresql-42.5.4.jar ${HIVE_HOME}/lib
+
+# copy config vào thư mục tmp của container
+COPY config/* /tmp/config/
+
+# chuyển file config
+RUN mv /tmp/config/core-site.xml ${HIVE_HOME}/conf/core-site.xml && \
+    mv /tmp/config/hdfs-site.xml ${HIVE_HOME}/conf/hdfs-site.xml && \
+    mv /tmp/config/hive-config.sh ${HIVE_HOME}/bin/hive-config.sh && \   
+    mv /tmp/config/hive-env.sh ${HIVE_HOME}/conf/hive-env.sh && \  
+    mv /tmp/config/hive-site.xml ${HIVE_HOME}/conf/hive-site.xml && \
+    mv /tmp/config/yarn-site.xml ${HIVE_HOME}/conf/yarn-site.xml
+
+
+
+# init schema
+RUN ${HIVE_HOME}/bin/schematool -dbType postgres -initSchema
+
+# start hive metastore
+CMD [ "$HIVE_HOME/bin/hive --service metastore" ]
+
+
